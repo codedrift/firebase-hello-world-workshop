@@ -38,7 +38,7 @@ export const useToDos = (userId: string) => {
   useEffect(() => {
     firebase
       .firestore()
-      .collection(`todos/${userId}`)
+      .collection(`user/${userId}/todos`)
       .onSnapshot(({ docs }) =>
         setTodos(
           docs.map(d => ({
@@ -55,7 +55,7 @@ export const useToDos = (userId: string) => {
 export const createTodo = async (userId: string, text: string) => {
   return firebase
     .firestore()
-    .collection(`todos/${userId}`)
+    .collection(`user/${userId}/todos`)
     .add({
       text
     });

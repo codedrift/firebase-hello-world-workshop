@@ -1,8 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import logo from "./logo.svg";
+import "./App.css";
+import { createTodo, useToDos } from "./firebase";
 
 function App() {
+  const [text, setText] = useState("");
+  const todos = useToDos("ich");
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setText(e.target.value);
+  };
+
+  const handleCreateTodo = () => {
+    if(text) {
+      createTodo("ich", text);
+      setText("");
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -19,6 +34,17 @@ function App() {
           Learn React
         </a>
       </header>
+      <div>
+        <ul>
+          {todos.map(t => (
+            <li key={t.id}>{t.text}</li>
+          ))}
+        </ul>
+        <div>
+          <input type="text" value={text} onChange={handleTextChange} />
+          <button onClick={handleCreateTodo}>Create</button>
+        </div>
+      </div>
     </div>
   );
 }
