@@ -34,3 +34,26 @@ npm start
       5. Answer `yes` when asked for single page setup
 5. Run `firebase deploy`
 6. [Look at what you've done (The app should be deployed now!](https://fir-hello-world-workshop-d5076.firebaseapp.com/)
+
+## 3. Add some data
+
+1. Install firebase in the project `npm i firebase`
+
+1. Copy the project configuration from the firebase console (App-settings -> Configuration)
+
+It should look something like this:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "AIzaSyDfrjOtN-QQkffT6aJidFUAFtap010mHOw",
+  authDomain: "fir-hello-world-workshop-d5076.firebaseapp.com",
+  databaseURL: "https://fir-hello-world-workshop-d5076.firebaseio.com",
+  projectId: "fir-hello-world-workshop-d5076",
+  storageBucket: "fir-hello-world-workshop-d5076.appspot.com",
+  messagingSenderId: "496398002753",
+  appId: "1:496398002753:web:9911086dbbd106cdbaf4c0"
+};
+```
+
+3. Create a file where all the firebase code lives e.g. `src/firebase.ts`
+
