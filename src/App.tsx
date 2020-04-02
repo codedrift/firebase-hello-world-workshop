@@ -1,49 +1,49 @@
 import React, { useState } from "react";
-import logo from "./logo.svg";
-import "./App.css";
-import { createTodo, useToDos } from "./firebase";
+import styles from "./App.module.css";
+import { createTodo, useToDos, removeTodo, useAuth, login, logout } from "./firebase";
 
 function App() {
+  // all the hooks first
+  // hook rule #1: they always have to be called in the same order
   const [text, setText] = useState("");
-  const todos = useToDos("ich");
+  const user = useAuth();
+  const todos = useToDos(user?.uid);
+
+  // show login button if user is logged out
+  if (!user) {
+    return <button onClick={login} className={styles.authButton}>Login</button>;
+  }
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
   };
 
   const handleCreateTodo = () => {
-    if(text) {
-      createTodo("ich", text);
+    if (text) {
+      createTodo(user?.uid, text);
       setText("");
     }
   };
 
+  const handleRemoveTodo = (todoId: string) => () => {
+    removeTodo(user?.uid, todoId);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-      <div>
-        <ul>
+    <div className={styles.root}>
+      <div className={styles.contentWrapper}>
+        <div className={styles.todoList}>
           {todos.map(t => (
-            <li key={t.id}>{t.text}</li>
+            <div className={styles.todoItem} key={t.id}>
+              {t.text} <button onClick={handleRemoveTodo(t.id)}>X</button>
+            </div>
           ))}
-        </ul>
-        <div>
-          <input type="text" value={text} onChange={handleTextChange} />
-          <button onClick={handleCreateTodo}>Create</button>
+          <div className={styles.todoItem}>
+            <input type="text" value={text} onChange={handleTextChange} />
+            <button onClick={handleCreateTodo}>Add todo</button>
+          </div>
         </div>
+        <button onClick={logout} className={styles.authButton}>Logout</button>;
       </div>
     </div>
   );

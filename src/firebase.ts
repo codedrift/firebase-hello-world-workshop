@@ -1,6 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import { auth } from "firebase";
 import { useState, useEffect } from "react";
 import { TodoItem } from "./model";
 
@@ -16,37 +17,23 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-firebase
-  .firestore()
-  .enablePersistence()
-  .catch((err: any) => {
-    console.log("Persistence disabled: ", err.code);
-    if (err.code === "failed-precondition") {
-      // Multiple tabs open, persistence can only be enabled
-      // in one tab at a a time.
-      // ...
-    } else if (err.code === "unimplemented") {
-      // The current browser does not support all of the
-      // features required to enable persistence
-      // ...
-    }
-  });
-
-export const useToDos = (userId: string) => {
+export const useToDos = (userId?: string) => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
 
   useEffect(() => {
-    firebase
-      .firestore()
-      .collection(`user/${userId}/todos`)
-      .onSnapshot(({ docs }) =>
-        setTodos(
-          docs.map(d => ({
-            id: d.id,
-            ...(d.data() as TodoItem)
-          }))
-        )
-      );
+    if (userId) {
+      firebase
+        .firestore()
+        .collection(`user/${userId}/todos`)
+        .onSnapshot(({ docs }) =>
+          setTodos(
+            docs.map(d => ({
+              id: d.id,
+              ...(d.data() as TodoItem)
+            }))
+          )
+        );
+    }
   }, [userId]);
 
   return todos;
@@ -59,4 +46,37 @@ export const createTodo = async (userId: string, text: string) => {
     .add({
       text
     });
+};
+
+export const removeTodo = async (userId: string, todoId: string) => {
+  return firebase
+    .firestore()
+    .collection(`user/${userId}/todos`)
+    .doc(todoId)
+    .delete();
+};
+
+export const login = () =>
+  auth().signInWithRedirect(new auth.GoogleAuthProvider());
+
+export const logout = () => {
+  auth().signOut();
+};
+
+export const useAuth = () => {
+  const [user, setUser] = useState<firebase.User | null>(null);
+
+  useEffect(() => {
+    auth().onAuthStateChanged(async (authUser: firebase.User | null) => {
+      console.log("Auth changed", authUser);
+      setUser(authUser);
+      if (authUser) {
+        console.log("User is logged in!");
+      } else {
+        console.log("User is logged out!");
+      }
+    });
+  }, []);
+
+  return user;
 };
