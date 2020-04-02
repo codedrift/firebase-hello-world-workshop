@@ -19,14 +19,17 @@ function App() {
   };
 
   const handleCreateTodo = () => {
-    if (text) {
+    // only create the todo if we have text and the user is logged in
+    if (text && user) {
       createTodo(user?.uid, text);
       setText("");
     }
   };
 
   const handleRemoveTodo = (todoId: string) => () => {
-    removeTodo(user?.uid, todoId);
+    if(user) {
+      removeTodo(user?.uid, todoId);
+    }
   };
 
   return (

@@ -1,12 +1,32 @@
 # firebase-hello-world-workshop
 
-## 1. Create a new PWA web app (react)
+This firebase hello world tutorial will guide you through the process of creating your very first firebase project.
 
-We will use a react pwa for this tutorial but you can use anything as long as it creates web artefacts that can be statically served.
+No credit card required!
+
+These are the topics we will cover:
+
+- Setting up a simple PWA (Progressive Web App)
+- Setting up a new firebase project
+- Reading/Writing data to the database (And receiving real time updates!)
+- Adding authentication
+- Securing the data
+- Deploying to production! 🚀
+
+---
+
+## 1. Create a new web app
+
+Everything begins with some code.
+
+These days it has gotten very common to create progressive web apps. They are very easy to develop, deploy, maintain and work on every device that has a web browser.
+We will use a react PWA for this tutorial but you can use anything as long as it creates web artefacts that can be statically served.
 
 E.g. create-react-app creates a `build` folder.
 
-Now, create the pwa:
+Meaning a html file and javascript in a `<script></script>` will do as well.
+
+Alright. Lets get started!
 
 ```bash
 npx create-react-app firebase-hello-world-workshop --template typescript
@@ -25,6 +45,11 @@ npm run build
 ```
 
 ## 2. Setup new firebase project
+
+Now we need an actual firebase project. This process is specific to firebase and these steps are the fastest way to get started. After creating a few firebase projects (trust me you will do this quite often from now on ;)) this goes pretty fast.
+This is the heavy lifting so lets get to it!
+
+NOTE: Once you create your firestore in a specific region (e.g. eu-west or us-central) you cannot go back. Choose wisely!
 
 1. [firebase.com](https://console.firebase.google.com/)
 2. Add new project
@@ -45,16 +70,23 @@ npm run build
       3. Select default location for `firestore.rules` and `firestore.indexes.json`
       4. Set `build` as public web directory
       5. Answer `yes` when asked for single page setup
-5. Run `firebase deploy`
-6. [Look at what you've done (The app should be deployed now!](https://fir-hello-world-workshop-d5076.firebaseapp.com/)
 
-## 3. Add some data
+Extra work for our PWA:
 
-1. Install firebase in the project `npm i firebase`
+To make sure our app gets built every time we deploy add the following configuration to `firebase.json`
 
-2. Create a file where all the firebase code lives e.g. `src/firebase.ts`
+```json
+"hosting": {
+...
+"predeploy": ["npm install", "npm run build"],
+...
+}
+```
 
-3. Copy the project configuration from the firebase console (App-settings -> Configuration) and use it to initialize the firebase instance.
+
+5. Install firebase in the project `npm i firebase`
+6. Create a file where all the firebase code lives e.g. `src/firebase.ts`
+7. Copy the project configuration from the firebase console (App-settings -> Configuration) and use it to initialize the firebase instance.
 
 It should look like this
 
@@ -75,7 +107,35 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 ```
 
-1. Add a function to read data
+## 3. Add some data
+
+Next we're going to add some data to the firestore and read it (duh!).
+
+1. Creating and deleting data is a walk in the park
+
+```javascript
+export const createTodo = async (userId: string, text: string) => {
+  return (
+    firebase
+      .firestore()
+      .collection(`users/${userId}/todos`)
+      // this will auto generate an id for us
+      .add({
+        text
+      })
+  );
+};
+
+export const removeTodo = async (userId: string, todoId: string) => {
+  return firebase
+    .firestore()
+    .collection(`users/${userId}/todos`)
+    .doc(todoId)
+    .delete();
+};
+```
+
+2. Now add a function to read data
 
 We can use [React Hooks](https://reactjs.org/docs/hooks-intro.html) to listen for changes and handle some state for us.
 
@@ -88,7 +148,7 @@ export const useToDos = (userId: string) => {
     firebase
       .firestore()
       // do not bother with this collection path. we will cover that soon!
-      .collection(`user/${userId}/todos`)
+      .collection(`users/${userId}/todos`)
       .onSnapshot(({ docs }) =>
         setTodos(
           docs.map(d => ({
@@ -103,35 +163,17 @@ export const useToDos = (userId: string) => {
 };
 ```
 
-5. Adding and creating data is just as simple
+3. Add an input field and buttons to create and delete todos.
 
-```javascript
-export const createTodo = async (userId: string, text: string) => {
-  return (
-    firebase
-      .firestore()
-      .collection(`user/${userId}/todos`)
-      // this will auto generate an id for us
-      .add({
-        text
-      })
-  );
-};
+See `App.tsx` for an implementation with react.
 
-export const removeTodo = async (userId: string, todoId: string) => {
-  return firebase
-    .firestore()
-    .collection(`user/${userId}/todos`)
-    .doc(todoId)
-    .delete();
-};
-```
+Of course you can do this as you like. Don't get lost in CSS just now. We still have some important stuff to do.
 
-6. Add some input field and button to create and delete todos.
-
-See `App.tsx` for an implementation with react
+👇👇👇
 
 ## 4. Authentication
+
+The next thing you probably wanna do is add authentication. This is probably the easiest part of firebase. But see for yourself...
 
 1.  Go to to firebase console -> authentication -> sign in method
 2.  Select "Google"
@@ -159,6 +201,7 @@ export const useAuth = () => {
   const [user, setUser] = (useState < firebase.User) | (null > null);
 
   useEffect(() => {
+    // once initialized our app will receive all auth state changes
     auth().onAuthStateChanged(async (authUser: firebase.User | null) => {
       console.log("Auth changed", authUser);
       setUser(authUser);
@@ -196,7 +239,7 @@ export const useToDos = (userId?: string) => {
     if (userId) {
       firebase
         .firestore()
-        .collection(`user/${userId}/todos`)
+        .collection(`users/${userId}/todos`)
         .onSnapshot(({ docs }) =>
           setTodos(
             docs.map(d => ({
@@ -213,8 +256,6 @@ export const useToDos = (userId?: string) => {
 ```
 
 7. Add a "Logout" Button (i usually forget this)
-
-
 
 ## 5. Security
 
@@ -233,3 +274,11 @@ service cloud.firestore {
   }
 }
 ```
+
+Thats it. Time to go live....
+
+## 6. Go live live to PRODUCTION
+
+1. Run `firebase deploy` in the project directory
+   1. This will automatically create all the security rules and deploy our web app.
+2. [Look at what you've done (The app should be deployed now!)](https://fir-hello-world-workshop-d5076.firebaseapp.com/)

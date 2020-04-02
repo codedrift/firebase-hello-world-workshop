@@ -10,6 +10,7 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "predeploy": ["npm install", "npm run build"],
     "rewrites": [
       {
         "source": "**",

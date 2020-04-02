@@ -24,7 +24,7 @@ export const useToDos = (userId?: string) => {
     if (userId) {
       firebase
         .firestore()
-        .collection(`user/${userId}/todos`)
+        .collection(`users/${userId}/todos`)
         .onSnapshot(({ docs }) =>
           setTodos(
             docs.map(d => ({
@@ -42,7 +42,7 @@ export const useToDos = (userId?: string) => {
 export const createTodo = async (userId: string, text: string) => {
   return firebase
     .firestore()
-    .collection(`user/${userId}/todos`)
+    .collection(`users/${userId}/todos`)
     .add({
       text
     });
@@ -51,7 +51,7 @@ export const createTodo = async (userId: string, text: string) => {
 export const removeTodo = async (userId: string, todoId: string) => {
   return firebase
     .firestore()
-    .collection(`user/${userId}/todos`)
+    .collection(`users/${userId}/todos`)
     .doc(todoId)
     .delete();
 };
@@ -67,6 +67,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<firebase.User | null>(null);
 
   useEffect(() => {
+    // once initialized our app will receive all auth state changes
     auth().onAuthStateChanged(async (authUser: firebase.User | null) => {
       console.log("Auth changed", authUser);
       setUser(authUser);
